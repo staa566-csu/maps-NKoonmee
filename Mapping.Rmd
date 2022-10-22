@@ -1,0 +1,147 @@
+---
+title: "Mapping"
+author: "Nat Koonmee"
+date: '2022-10-22'
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+# knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(include = FALSE)
+
+library("readxl")
+library(dplyr)
+library(ggpubr)
+library(tidyverse)
+library(ggplot2)
+library(gapminder)
+library(TSstudio)
+library(hrbrthemes)
+library(scales)
+library(lubridate)
+library(caret)
+library(plotly)
+library(openintro)
+```
+
+### Data Source
+
+we got US population by race from https://worldpopulationreview.com/states/states-by-race \newline
+and we got the resident population from www.census.gov \newline
+\newline
+
+Those both datasets are open source that anyone can legally download it.
+
+
+
+### Loading data
+```{r, include = T}
+
+df <- read.csv("Mapping.csv")
+# df$State <- df$State %>%
+#   abbr2state() %>%
+#   tolower()
+
+df$Resident.Population <- as.numeric(gsub(",", "", df$Resident.Population))
+
+for (i in  6:56){
+  df[i, 1] = sub('^.(.*)', '\\1' , df[i, 1])
+}
+df <- df[6:56, ]
+
+df$State <- df$State %>% tolower()
+
+# a = "39,512,223"
+# as.numeric(gsub(",", "", a))
+```
+
+```{r, include = F}
+map1 <- map_data("state") %>% 
+  mutate(region = str_to_lower(region)) %>% 
+  left_join(df, by = c("region" = "State"))
+map1
+```
+
+
+### US population
+```{r, include = TRUE}
+us_pop <- ggplot(data = map1,
+                 mapping = aes(x = long, y = lat,
+                               group = group,
+                               fill = Resident.Population)) +
+  geom_polygon(color = "white", size = .1) +
+  theme_bw() +
+  coord_map() +
+  scale_fill_continuous(type = "viridis")+
+  ggtitle("US resident population") +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.title = element_blank())
+
+
+us_pop
+
+```
+
+### Asian population in US
+```{r, include = TRUE}
+us_pop <- ggplot(data = map1,
+                 mapping = aes(x = long, y = lat,
+                               group = group,
+                               fill = Asian)) +
+  geom_polygon(color = "white", size = .1) +
+  theme_bw() +
+  coord_map() +
+  scale_fill_continuous()+
+  ggtitle("US resident population") +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.title = element_blank())
+
+
+us_pop
+
+```
+
+Those plot show the population in United State. We couls see that there are so many Asian race in CA, which make others state end up having the save colors
+
+
+
+```{r, include=TRUE}
+us_pop <- ggplot(data = map1,
+                 mapping = aes(x = long, y = lat,
+                               group = group,
+                               fill = AsianTotalPerc)) +
+  geom_polygon(color = "white", size = .1) +
+  theme_bw() +
+  coord_map() +
+  scale_fill_continuous(type = "viridis")+
+  ggtitle("US resident population") +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.title = element_blank())
+
+us_pop
+```
+
+
+
+After re-scale to see only the percentage, we can see that it is much easier to define Asian population in each State
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
